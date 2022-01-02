@@ -14,6 +14,7 @@
 #include <locale.h>
 #include <fcntl.h>
 #include <sys/prctl.h> // momentanea, per dare nomi ai processi
+#include <pthread.h>
 
 
 #define MENU_ELEM 3
@@ -43,7 +44,7 @@ typedef struct {
     IdOggetto id;            // Identificatore dell'entità che invia i dati
     Pos pos;           // Posizione attuale dell'oggetto
     Pos old_pos;       // Posizione precedente dell'oggetto
-    pid_t pid;              // Pid del processo proprietario
+    pthread_t thread_id;              // Pid del processo proprietario
     int vite;
 } Oggetto;
 
