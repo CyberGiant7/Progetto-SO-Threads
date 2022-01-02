@@ -39,8 +39,8 @@ StatoCorrente menu() {
     Oggetto fake_navicella = {0, ID_NAVICELLA, {1, maxy/2}, {0, 0}, 0, 0};
     Oggetto fake_nemico1 = {0, ID_NEMICO, {maxx-4, (maxy/2)}, {0, 0}, 0, 0};
     Oggetto fake_nemico2 = {0, ID_NEMICO, {maxx-6, (maxy/2+4)}, {0, 0}, 0, 0};
-    Oggetto fake_missile1 = {0, ID_MISSILE, {8, maxy/2 +3}, {0, 0}, 0, 0};
-    Oggetto fake_missile2 = {0, ID_MISSILE, {10, maxy/2 +1}, {0, 0}, 0, 0};
+    Oggetto fake_missile1 = {0, ID_MISSILE1, {8, maxy/2 +3}, {0, 0}, 0, 0};
+    Oggetto fake_missile2 = {0, ID_MISSILE1, {10, maxy/2 +1}, {0, 0}, 0, 0};
     Oggetto fake_bomba = {0, ID_BOMBA, {maxx-7, (maxy/2)+1}, {0, 0}, 0, 0};
     setlocale(LC_ALL, "");
     initscr(); /* inizializzazione dello schermo */
@@ -67,12 +67,12 @@ StatoCorrente menu() {
         mvprintw(i, (maxx - 65) / 2, "%s\n", titolo[i]);
         attroff(COLOR_PAIR(1));
     }
-    stampaNavicella(fake_navicella);
-    stampaMiss_bomb(fake_missile1);
-    stampaMiss_bomb(fake_missile2);
-    stampaNemico(fake_nemico1, 3);
-    stampaNemico(fake_nemico2, 3);
-    stampaMiss_bomb(fake_bomba);
+    stampaNavicella(&fake_navicella);
+//    stampaMiss_bomb(fake_missile1);
+//    stampaMiss_bomb(fake_missile2);
+//    stampaNemico(fake_nemico1, 3);
+//    stampaNemico(fake_nemico2, 3);
+//    stampaMiss_bomb(fake_bomba);
 
     refresh();
 

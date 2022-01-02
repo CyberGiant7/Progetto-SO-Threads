@@ -13,9 +13,9 @@
 
 const Oggetto init = {0, 0, {0, 0}, {0, 0}, 0, 0}; //Costante utilizzata per inizializzare la struttura OGGETTO
 void* nave_player(void* arg);
-_Bool AreaGioco(Oggetto *navicella, Oggetto *enemies);
+_Bool AreaGioco(Oggetto *navicella, Oggetto *enemies, arg_to_navicella *argToNavicella);
 void Enemy(int pipein, int pipeout, Oggetto enemy);
-void missili(int pipe_to_grandpa, int pipe_to_dad, int tipo, Oggetto *missile);
+void* missili(void* arg);
 
 
 
@@ -95,10 +95,14 @@ int main() {
     }
 }
 
+
 StatoCorrente gioco() {
+
     int i, l, n;
     pthread_t t_navicella;
+
     Oggetto navicella = {0, ID_NAVICELLA, {1, maxy/2}, {-1, -1}, t_navicella, 3};
+    arg_to_navicella argToNavicella = {&navicella, FALSE};
     _Bool WIN;
     l = 0, n = 0;
     Oggetto *enemies = NULL;
@@ -120,14 +124,14 @@ StatoCorrente gioco() {
     bkgd(COLOR_PAIR(1));
 
     //inizializzazione treads
-    // thread navicella
-    pthread_create(&t_navicella, NULL, &nave_player, &navicella);
+    /// thread navicella
+    pthread_create(&t_navicella, NULL, &nave_player, &argToNavicella);
 //     thread nemici
 //     thread missili
 //     thread bombe
 
 //    nave player
-    mvprintw(maxy / 2, maxx / 2, "%s", nave);
+
 //    nave_player(fd1[1], fd2[0]); /* il secondo processo figlio invoca la funzione nave_player passandogli la pipe in scrittura*/
 //    nemici
 //    enemies = (Oggetto *) calloc(M, sizeof(Oggetto));
@@ -136,7 +140,7 @@ StatoCorrente gioco() {
 //        enemies[i].id = ID_NEMICO;
 //    }
 
-    //WIN = AreaGioco(fd1[0], fd2[1], pipe_enemies, enemies); /* il processo padre invoca la funzione di AreaGioco */
+    WIN = AreaGioco(&navicella, enemies, &argToNavicella); /* il processo padre invoca la funzione di AreaGioco */
 
     if(WIN){
         clear();
@@ -146,8 +150,7 @@ StatoCorrente gioco() {
         refresh();
     }else {
         clear();
-        for (i = 0; i < 6
-        ; ++i) {
+        for (i = 0; i < 6; ++i) {
             mvprintw((maxy- 6)/2 + i, (maxx-69)/2, gameover[i]);
         }
         refresh();
@@ -271,38 +274,42 @@ StatoCorrente gioco() {
 //}
 
 
-void* nave_player(void* arg){
+void* nave_player(void *arg) {
     int i = 0, j = 0;
     int num_missili = 0;
-    Oggetto navicella;
-    _Bool blocco_sparo = false;
-
-
-//    for (i = 0; i < DIM_NAVICELLA; i++) {
-//        move(navicella.pos.y + i, 0);
-//        clrtoeol();
-//    }
-//    refresh();
-
+    arg_to_navicella *argToNavicella;
+    argToNavicella = (arg_to_navicella *) arg;
+    Oggetto *navicella = argToNavicella->navicella;
+    _Bool *sparo = &argToNavicella->sparo;
 
     keypad(stdscr, TRUE);
     while (TRUE) {
-        nodelay(stdscr, 1);
-        timeout(500);
+//        nodelay(stdscr, 1);
+//        timeout(500);
         int c = getch();
         switch (c) {
             case KEY_UP:
-                if (navicella.pos.y > 1)
-                    navicella.pos.y -= 1;
-
+                pthread_mutex_lock(&mutex_nave);
+                if (navicella->pos.y > 1)
+                    navicella->pos.y -= 1;
+                pthread_mutex_unlock(&mutex_nave);
                 break;
             case KEY_DOWN:
-                if (navicella.pos.y < maxy - DIM_NAVICELLA)
-                    navicella.pos.y += 1;
-
+                pthread_mutex_lock(&mutex_nave);
+                if (navicella->pos.y < maxy - DIM_NAVICELLA)
+                    navicella->pos.y += 1;
+                pthread_mutex_unlock(&mutex_nave);
                 break;
             case KEY_SPACE:
-//                if (num_missili <= MAX_MISSILI - 2) {
+                pthread_mutex_lock(&mutex_nave);
+                *sparo = true;
+                pthread_mutex_unlock(&mutex_nave);
+                break;
+        }
+//        usleep()
+    }
+}
+//if (num_missili <= MAX_MISSILI - 2) {
 //                    num_missili += 2;
 //                    missile1.pos.y = navicella.pos.y + (DIM_NAVICELLA / 2);
 //                    missile1.pos.x = navicella.pos.x + DIM_NAVICELLA;
@@ -342,9 +349,7 @@ void* nave_player(void* arg){
 //                            break;
 //                    }
 //                }
-                break;
-        }
-//        //prima legge dai figli missili
+//prima legge dai figli missili
 //        for (i = 0; i <= MAX_MISSILI * 100; i++) {
 //            read(filedes[0], &temp_missile, sizeof(temp_missile));
 //            if ((temp_missile.index) >= 0 && (temp_missile.index) < MAX_MISSILI) {
@@ -365,7 +370,7 @@ void* nave_player(void* arg){
 //            }
 //            mvprintw(i+1,0,"array_missili[%d].vite= %d, j= %d", i,array_missili[i].vite, j);
 //            refresh();
-        }
+//}
 //
 //
 //        if (num_missili == MAX_MISSILI && j == MAX_MISSILI) {
@@ -375,43 +380,42 @@ void* nave_player(void* arg){
 //        mvprintw(1,0,"num_missili= %d, j= %d", num_missili, j);
 //        refresh();
 
-        navicella.old_pos = navicella.pos;
-    }
-}
 
-void missili(int pipe_to_grandpa, int pipe_to_dad, int tipo, Oggetto *missile){
+void* missili(void* arg) {
+    Oggetto *missile, temp_missile;
+    missile = (Oggetto*) arg;
     int i = 0;
-    missile->vite = 1;
-//    missile->pid = getpid();
     while (TRUE) {
+        pthread_mutex_lock(&mutex_missili);
+        temp_missile = *missile;
+        pthread_mutex_unlock(&mutex_missili);
         if (i % 20 == 0) {
-            if (tipo == 2) {
-                missile->pos.y += 1;
-
-            } else if (tipo == 1) {
-                missile->pos.y -= 1;
-
+            if (temp_missile.id == ID_MISSILE2) {
+                temp_missile.pos.y += 1;
+            } else if (temp_missile.id == ID_MISSILE1) {
+                temp_missile.pos.y -= 1;
             }
         }
-        if(tipo == 2 || tipo == 1){
-            missile->pos.x += 1;
+        if (temp_missile.id == ID_MISSILE2 || temp_missile.id == ID_MISSILE1) {
+            temp_missile.pos.x += 1;
         }
-        if(tipo == 3){
-            missile->pos.x -= 1;
+        if (temp_missile.id == ID_BOMBA) {
+            temp_missile.pos.x -= 1;
         }
-        write(pipe_to_grandpa, missile, sizeof(Oggetto));
-        write(pipe_to_dad, missile, sizeof(Oggetto));
         i++;
-        if ((missile->pos.x > maxx || missile->pos.y >= maxy || missile->pos.y < 0) && (tipo == 2 || tipo == 1)) {
-            missile->vite = 0;
-            write(pipe_to_dad, missile, sizeof(Oggetto));
-            exit(1);
-        }else if((missile->pos.x < 0 || missile->pos.y >= maxy || missile->pos.y < 0) && tipo == 3){
-            missile->vite = 0;
-            write(pipe_to_dad, missile, sizeof(Oggetto));
-            exit(1);
+        if ((temp_missile.pos.x > maxx || temp_missile.pos.y >= maxy || temp_missile.pos.y < 0) && (temp_missile.id == ID_MISSILE2 || temp_missile.id == ID_MISSILE1)) {
+            temp_missile.vite = 0;
+            pthread_mutex_lock(&mutex_missili);
+            *missile = temp_missile;
+            pthread_mutex_unlock(&mutex_missili);
+            pthread_exit(NULL);
+        } else if ((temp_missile.pos.x < 0 || temp_missile.pos.y >= maxy || temp_missile.pos.y < 0) && temp_missile.id == ID_BOMBA) {
+            temp_missile.vite = 0;
+            pthread_exit(NULL);
         }
-        missile->old_pos = missile->pos;
+        pthread_mutex_lock(&mutex_missili);
+        *missile = temp_missile;
+        pthread_mutex_unlock(&mutex_missili);
         usleep(velocita_missili); //regola velocità missili
     }
 }
@@ -427,31 +431,23 @@ void missili(int pipe_to_grandpa, int pipe_to_dad, int tipo, Oggetto *missile){
  * @param enemies
  * @return Il valore vittoria, vero se si vince e falso se si perde
  */
-_Bool AreaGioco(Oggetto *navicella, Oggetto *enemies) {
+_Bool AreaGioco(Oggetto *navicella, Oggetto *enemies, arg_to_navicella *argToNavicella) {
     clear();
-    int i, j, nemici_vivi;
-    _Bool collision = false, WIN = false;
+    refresh();
+    int i, j, nemici_vivi, missili_vivi = 0, missili_morti = MAX_MISSILI;
+    _Bool collision = false, WIN = false, sparo;
     Oggetto valore_letto = init;
-    Oggetto missili[MAX_MISSILI];
+    Oggetto rockets[MAX_MISSILI];
     Oggetto *bombe_nem = (Oggetto *) calloc(M, sizeof(Oggetto));
     InfoToNemici *message_to_nemici = (InfoToNemici *) calloc(M, sizeof(InfoToNemici));
 
-    for (i = 0; i < MAX_MISSILI; i++) {
-        missili[i] = init;
-    }
+    pthread_t t_missili[MAX_MISSILI];
 
-    for (i = 0; i < DIM_NAVICELLA; i++) {
-        if (i <= 1 || i >= 4) {
-            attron(COLOR_PAIR(6));
-            mvaddstr((maxy - DIM_NAVICELLA) / 2 + i, 1, nave[i]);
-            attroff(COLOR_PAIR(6));
-        } else {
-            attron(COLOR_PAIR(2));
-            mvaddstr((maxy - DIM_NAVICELLA) / 2 + i, 1, nave[i]);
-            attroff(COLOR_PAIR(2));
-        }
+//    for (i = 0; i < MAX_MISSILI; i++) {
+//        rockets[i] = init;
+//    }
 
-    }
+//
 //    for (i = 0; i < M; ++i) {
 //        enemies[i].vite = 3;
 //        message_to_nemici[i].vite = 3;
@@ -491,7 +487,7 @@ _Bool AreaGioco(Oggetto *navicella, Oggetto *enemies) {
 //                break;
 //            case ID_MISSILE:
 //                stampaMiss_bomb(valore_letto);
-//                missili[valore_letto.index] = valore_letto;
+//                rockets[valore_letto.index] = valore_letto;
 //                break;
 //            case ID_BOMBA:
 //                stampaMiss_bomb(valore_letto);
@@ -499,10 +495,10 @@ _Bool AreaGioco(Oggetto *navicella, Oggetto *enemies) {
 //                break;
 //        }
 //        /// Controllo delle varie collisioni
-//        collisione_missili_bombe(missili, bombe_nem, pipe_to_navicella, pipe_to_nemici);
+//        collisione_missili_bombe(rockets, bombe_nem, pipe_to_navicella, pipe_to_nemici);
 //        collisione_bombe_navicella(&navicella, bombe_nem, pipe_to_nemici);
-//        collisione_missili_nemici(enemies, missili, pipe_to_navicella, pipe_to_nemici, message_to_nemici);
-
+//        collisione_missili_nemici(enemies, rockets, pipe_to_navicella, pipe_to_nemici, message_to_nemici);
+//
 //        /// Collisione tra navicella e nemici
 //        for (i = 0; i < M; i++) {
 //            if (enemies[i].pos.x == DIM_NAVICELLA + 2) {
@@ -527,10 +523,11 @@ _Bool AreaGioco(Oggetto *navicella, Oggetto *enemies) {
 //            WIN = TRUE;
 //            collision = true;
 //        }
-//        move(0, 0);
-//        clrtoeol();
-//        mvprintw(0, 0, "VITE: %d, nemici: %d", navicella.vite, nemici_vivi);
-//        refresh();
+        }
+        move(0, 0);
+        clrtoeol();
+        mvprintw(0, 0, "VITE: %d", navicella->vite);
+        refresh();
     } while (!collision);
 //    for (i = 0; i < M; ++i) {
 //        if(enemies[i].pid != 0){
@@ -542,13 +539,18 @@ _Bool AreaGioco(Oggetto *navicella, Oggetto *enemies) {
     return WIN;
 }
 
-void stampaNavicella(Oggetto navicella) {
+void stampaNavicella(Oggetto *navicella) {
     int i;
+
+    pthread_mutex_lock(&mutex_nave);
+    Oggetto temp_navicella = *navicella;
+    navicella->old_pos = navicella->pos;
+    pthread_mutex_unlock(&mutex_nave);
     /* cancello la 'vecchia' posizione della navicella */
-    if (navicella.old_pos.x >= 0) {
+    if (temp_navicella.old_pos.x >= 0) {
         attron(COLOR_PAIR(0));
         for (i = 0; i < DIM_NAVICELLA; i++) {
-            mvaddstr(navicella.old_pos.y + i, navicella.old_pos.x, "      ");
+            mvaddstr(temp_navicella.old_pos.y + i, temp_navicella.old_pos.x, "      ");
         }
         attroff(COLOR_PAIR(0));
     }
@@ -556,11 +558,11 @@ void stampaNavicella(Oggetto navicella) {
     for (i = 0; i < DIM_NAVICELLA; i++) {
         if (i <= 1 || i >= 4) {
             attron(COLOR_PAIR(6));
-            mvaddstr(navicella.pos.y + i, navicella.pos.x, nave[i]);
+            mvaddstr(temp_navicella.pos.y + i, temp_navicella.pos.x, nave[i]);
             attroff(COLOR_PAIR(6));
         } else {
             attron(COLOR_PAIR(2));
-            mvaddstr(navicella.pos.y + i, navicella.pos.x, nave[i]);
+            mvaddstr(temp_navicella.pos.y + i, temp_navicella.pos.x, nave[i]);
             attroff(COLOR_PAIR(2));
         }
     }
@@ -611,23 +613,24 @@ void stampaNavicella(Oggetto navicella) {
 //            break;
 //    }
 //}
-//void stampaMiss_bomb(Oggetto bomb_miss) {
-//    if (bomb_miss.pid != 0) {
-//        attron(COLOR_PAIR(0));
-//        mvprintw(bomb_miss.old_pos.y, bomb_miss.old_pos.x, " ");
-//        attroff(COLOR_PAIR(0));
+void stampaMiss_bomb(Oggetto *bomb_miss) {
+//    if (bomb_miss != 0) {
+        attron(COLOR_PAIR(0));
+        mvprintw(bomb_miss->old_pos.y, bomb_miss->old_pos.x, " ");
+        attroff(COLOR_PAIR(0));
 //    }
-//    if (bomb_miss.id == ID_MISSILE) {
-//        attron(COLOR_PAIR(3));
-//        mvprintw(bomb_miss.pos.y, bomb_miss.pos.x, "⟢"); ///♿ ⟢ ⁂ ꗇ ꗈ 💣 🚀 卐 ◌́ ◌͂ ✝
-//        attroff(COLOR_PAIR(3));
-//    }
-//    else {
-//        attron(COLOR_PAIR(7));
-//        mvprintw(bomb_miss.pos.y, bomb_miss.pos.x, "⁂"); ///♿ ⟢ ⁂ ꗇ ꗈ 💣 🚀 卐 ◌́ ◌͂ ✝
-//        attroff(COLOR_PAIR(7));
-//    }
-//}
+    if (bomb_miss->id == ID_MISSILE1 || bomb_miss->id == ID_MISSILE2) {
+        attron(COLOR_PAIR(3));
+        mvprintw(bomb_miss->pos.y, bomb_miss->pos.x, "⟢"); ///♿ ⟢ ⁂ ꗇ ꗈ 💣 🚀 卐 ◌́ ◌͂ ✝
+        attroff(COLOR_PAIR(3));
+    }
+    else {
+        attron(COLOR_PAIR(7));
+        mvprintw(bomb_miss->pos.y, bomb_miss->pos.x, "⁂"); ///♿ ⟢ ⁂ ꗇ ꗈ 💣 🚀 卐 ◌́ ◌͂ ✝
+        attroff(COLOR_PAIR(7));
+    }
+    bomb_miss->old_pos = bomb_miss->pos;
+}
 
 //void collisione_missili_bombe(Oggetto *missili, Oggetto *bombe_nem, int pipe_to_navicella,int *pipe_to_nemici){
 //    int i, j;

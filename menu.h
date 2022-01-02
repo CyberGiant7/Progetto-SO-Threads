@@ -37,7 +37,7 @@ typedef struct {
     int x; /* coordinata x */
     int y; /* coordinata y */
 } Pos;
-typedef enum{ID_NAVICELLA, ID_NEMICO, ID_MISSILE, ID_BOMBA} IdOggetto;
+typedef enum{ID_NAVICELLA, ID_NEMICO, ID_MISSILE1, ID_MISSILE2, ID_BOMBA} IdOggetto;
 
 typedef struct {
     int index;         // Indice dell'oggetto
@@ -47,6 +47,11 @@ typedef struct {
     pthread_t thread_id;              // Pid del processo proprietario
     int vite;
 } Oggetto;
+
+typedef struct {
+    Oggetto *navicella;
+    _Bool sparo;
+} arg_to_navicella;
 
 typedef struct{
     int vite;
@@ -60,8 +65,8 @@ extern int M;
 extern int num_righe;
 extern int mov_verticale;
 extern void stampaNemico(Oggetto nemico, int vite);
-extern void stampaNavicella(Oggetto navicella);
-extern void stampaMiss_bomb(Oggetto bomb_miss);
+extern void stampaNavicella(Oggetto *navicella);
+extern void stampaMiss_bomb(Oggetto *bomb_miss);
 extern int velocita_missili;
 StatoCorrente opzioni();
 
