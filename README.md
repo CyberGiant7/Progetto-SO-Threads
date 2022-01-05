@@ -1,6 +1,7 @@
 # Progetto_SO___Thread
 
 Versione con i processi
+
 Per la versione con i processi abbiamo strutturato il progetto utilizzando la funzione AreaGioco che è collegata tramite pipes
 ai processi figli che generano le coordinate della navicella del player, dei suoi missili, dei nemici e delle loro bombe.
 Da area Gioco vengono gestite tutte le collisioni e le stampe dei vari oggetti di gioco.
