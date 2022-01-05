@@ -1,7 +1,8 @@
 /**
- * In questo file sorgente vengono definite le funzioni @collisione_missili_bombe, @collisione_bombe_navicella e
- * @collisione_missili_nemici
+ * In questo file sorgente vengono gestite le collisioni tra i vari oggetti del gioco e vengono definite le
+ * funzioni @collisione_missili_bombe, @collisione_bombe_navicella e @collisione_missili_nemici
  */
+
 #include "collisioni.h"
 /**
  * La funzione @collisione_missili_bombe gestisce la collisione tra i missili generati dalla navicella e le bombe
@@ -33,7 +34,7 @@ void collisione_missili_bombe(Oggetto *missili, Oggetto *bombe_nem){
                         mvaddstr(missili[i].old_pos.y, missili[i].old_pos.x, " ");
                         mvaddstr(missili[i].pos.y, missili[i].pos.x, " ");
                         attroff(COLOR_PAIR(0));
-                        missili[i] = init; // la locazione del missile colliso viene rinizializzata con @init
+                        missili[i] = init; // la locazione del missile colliso viene reinizializzata con @init
                     }
                 }
             }

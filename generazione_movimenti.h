@@ -3,6 +3,7 @@
 
 #include "macro.h"
 
+/// Dichiarazione delle funzioni
 void* nave_player(void* arg);
 void* Enemy(void* arg);
 void* missili(void* arg);

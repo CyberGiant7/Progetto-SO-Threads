@@ -1,4 +1,9 @@
+/**
+ * In questo file vengono definite le funzioni per la gestione dei menu e delle varie impostazioni.
+ */
+
 #include "area_menu.h"
+
 /// Inizializzazione delle varie stampe
 char *gioca[2]={"█▀▀ █ █▀█ █▀▀ ▄▀█",
                 "█▄█ █ █▄█ █▄▄ █▀█"};
@@ -48,6 +53,8 @@ StatoCorrente menu() {
     Oggetto fake_missile1 = {0, ID_MISSILE1, {8, maxy/2 +3}, {0, 0}, 0, 0};
     Oggetto fake_missile2 = {0, ID_MISSILE1, {10, maxy/2 +1}, {0, 0}, 0, 0};
     Oggetto fake_bomba = {0, ID_BOMBA, {maxx-7, (maxy/2)+1}, {0, 0}, 0, 0};
+    Oggetto fake_bomba2 = {0, ID_BOMBA, {maxx-14, (maxy/2)+5}, {0, 0}, 0, 0};
+
 
 
     setlocale(LC_ALL, "");      // per poter utilizzare caratteri unicode
@@ -59,6 +66,7 @@ StatoCorrente menu() {
     sprintf(parametro, "printf '\033[8;%d;%dt'", maxy, maxx);
     system(parametro);
     resize_term(maxy, maxx);
+    usleep(100000);
 
     ///inizializzazione colori
     start_color();
@@ -83,6 +91,7 @@ StatoCorrente menu() {
     stampaNemico(&fake_nemico1);
     stampaNemico(&fake_nemico2);
     stampaBomba(&fake_bomba);
+    stampaBomba(&fake_bomba2);
     refresh();
 
 
@@ -301,6 +310,7 @@ StatoCorrente opzioni() {
             sprintf(parametro, "printf '\033[8;%d;%dt'", maxy, maxx);
             system(parametro);          // Cambio la risoluzione del terminale
             resize_term(maxy, maxx);    // Cambio la risoluzione della finestra di ncurses
+            usleep(100000);
             stato_uscita =  OPZIONI;    // Imposto la variabile di ritorno per tornare nelle opzioni
             break;
         case 3: // caso Missili

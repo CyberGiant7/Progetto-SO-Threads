@@ -1,24 +1,26 @@
-#include "generazione_movimenti.h"
 /**
- * La funzione Enemy crea e/o elimina le navicelle nemiche, inoltre,
- * inizializza e aggiorna la posizione della navicella.
+ * In questo file vengono definite le funzioni per la gestione dei movimenti dei vari oggetti di gioco
+ */
+
+#include "generazione_movimenti.h"
+
+/**
+ * La funzione Enemy inizializza, elimina una navicella nemica e aggiorna la sua posizione.
  * @param arg - È un puntatore generico. In questo caso viene passata una struttura Oggetto
  * @return - void*
  */
 void* Enemy(void* arg) {
-    int j = 0, l = 0, temp; // inizializzazione variabili temporanee
-    int status = 0; //
+    /// Inizializzazione variabili
+    int j = 0, l = 0;   // Variabili contatori spostamento
+    int temp;           // per il calcolo della posizione
+    int status = 0;     // Per cambiare la direzione dello spostamento
+
     /** Dichiarazione strutture temporanee per aggiornare i valori dopo lo spostamento **/
     Oggetto *enemy, temp_enemy;
     enemy = (Oggetto*) arg;
-    /* Inizializzazione parziale dei valori della navicella nemica */
+    /// Inizializzazione parziale dei valori della navicella nemica
     pthread_mutex_lock(&mtx_nemici); ///blocca il mutex @mtx_nemici
-    enemy->vite = 3;
-    enemy->old_pos.x = -1;
-    enemy->old_pos.y = -1;
-    enemy->id = ID_NEMICO;
     temp_enemy = *enemy;
-
     pthread_mutex_unlock(&mtx_nemici); ///sblocca il mutex @mtx_nemici
     while(true) {
         /* Aggiorna i valori delle coordinate della navicella per farla muovere */
@@ -28,33 +30,32 @@ void* Enemy(void* arg) {
 
         /* Se la navicella nemica è morta*/
         if (temp_enemy.vite == 0){
-            pthread_mutex_lock(&mtx_nemici); ///blocca il mutex @mtx_nemici
-            enemy->pos = temp_enemy.pos; // salva la posizione attuale
-            enemy->old_pos = temp_enemy.old_pos; // salva la posizione precedente
-            pthread_mutex_unlock(&mtx_nemici); ///blocca il mutex @mtx_nemici
-            pthread_exit(NULL); // termina la chiamata al thread
+            pthread_mutex_lock(&mtx_nemici);     ///blocca il mutex @mtx_nemici
+            enemy->pos = temp_enemy.pos;            // salva la posizione attuale
+            enemy->old_pos = temp_enemy.old_pos;    // salva la posizione precedente
+            pthread_mutex_unlock(&mtx_nemici);   /// sblocca il mutex @mtx_nemici
+            pthread_exit(NULL);                     // termina il thread corrente
         } else {
-            pthread_mutex_lock(&mtx_nemici); ///blocca il mutex @mtx_nemici
-            enemy->pos = temp_enemy.pos; // salva la posizione attuale
-            enemy->old_pos = temp_enemy.old_pos; // salva la posizione precedente
-            temp_enemy.vite = enemy->vite; // aggiorna le vite
-            pthread_mutex_unlock(&mtx_nemici); ///blocca il mutex @mtx_nemici
+            pthread_mutex_lock(&mtx_nemici);     ///blocca il mutex @mtx_nemici
+            enemy->pos = temp_enemy.pos;            // salva la posizione attuale
+            enemy->old_pos = temp_enemy.old_pos;    // salva la posizione precedente
+            temp_enemy.vite = enemy->vite;          // aggiorna le vite
+            pthread_mutex_unlock(&mtx_nemici);    /// sblocca il mutex @mtx_nemici
         }
 
-
         /* Spostamento orizzontale navicelle nemiche */
-        if (j % 8 == 0) {
+        if (j % 8 == 0) {   // ogni 8 spostamenti in verticale avanza
             l++;
         }
 
-        usleep(300000); //velocità spostamento nemici
+        usleep(300000);     //velocità spostamento nemici
         /* Spostamenti verticali navicelle nemiche*/
         if (j <= mov_verticale && status == 0) {
-            j++; // verso su
+            j++; // verso giù
             if (j == mov_verticale)
                 status = 1;
         } else if (j >= 0 && status == 1) {
-            j--; //verso giù
+            j--; //verso su
             if (j == 0)
                 status = 0;
         }
@@ -108,7 +109,7 @@ void* nave_player(void *arg) {
 }
 /**
  * La funzione missili genera un movimento in diagonale verso l'alto o verso il basso in base a quale
- * missile gli viene passato in imput
+ * missile gli viene passato in input
  * @param arg - È un puntatore generico. In questo caso viene passata una struttura Oggetto
  * @return - void*
  */
@@ -118,42 +119,42 @@ void* missili(void* arg) {
     missile = (Oggetto *) arg;
     int i = 0; // indice contatore
     while (TRUE) {
-        pthread_mutex_lock(&mtx_missili); ///blocca il mutex @mtx_missili
-        temp_missile = *missile; //variabile temporanea
+        pthread_mutex_lock(&mtx_missili);   ///blocca il mutex @mtx_missili
+        temp_missile = *missile;            //variabile temporanea
         pthread_mutex_unlock(&mtx_missili); ///sblocca il mutex @mtx_missili
-        // Ogni 20 spostamenti orizzontali
-        if (i % 20 == 0) {
+
+        if (i % 20 == 0) { // Ogni 20 spostamenti orizzontali
             if (temp_missile.id == ID_MISSILE2) {
                 temp_missile.pos.y += 1; // MISSILE2 si sposta verso il basso
             } else if (temp_missile.id == ID_MISSILE1) {
                 temp_missile.pos.y -= 1; // MISSILE1 si sposta verso l'alto
             }
+            i = 0;
         }
-        // Sposta il missile di una posione da sinistra verso destra
-        temp_missile.pos.x += 1;
+        temp_missile.pos.x += 1;    // Sposta il missile di una posizione da sinistra verso destra
         i++;
         // Se uno dei due missili raggiunge i bordi della finestra di gioco
         if ((temp_missile.pos.x > maxx || temp_missile.pos.y >= maxy || temp_missile.pos.y < 0) &&
             (temp_missile.id == ID_MISSILE2 || temp_missile.id == ID_MISSILE1)) {
-            temp_missile.vite = 0; // uccide il missile
-            pthread_mutex_lock(&mtx_missili); ///blocca il mutex @mtx_missili
-            *missile = init; // rinizializzazione del missile morto
+            temp_missile.vite = 0;              // impostiamo le vite a zero
+            pthread_mutex_lock(&mtx_missili);   ///blocca il mutex @mtx_missili
+            *missile = init;                    // rinizializzazione del missile morto
             pthread_mutex_unlock(&mtx_missili); ///sblocca il mutex @mtx_missili
-            pthread_exit(NULL);
+            pthread_exit(NULL);                 // termina il thread corrente
         }
-        pthread_mutex_lock(&mtx_missili); ///blocca il mutex @mtx_missili
-        *missile = temp_missile; // aggiorna i valori del missile
+        pthread_mutex_lock(&mtx_missili);   ///blocca il mutex @mtx_missili
+        *missile = temp_missile;            // aggiorna i valori del missile
         pthread_mutex_unlock(&mtx_missili); ///sblocca il mutex @mtx_missili
-        usleep(velocita_missili); //regola velocità missili
+        usleep(velocita_missili);           // Regola velocità missili
     }
 }
 /**
- * La funzione missili genera un movimento in diagonale verso l'alto o verso il basso in base a quale
- * missile gli viene passato in imput
+ * La funzione bombe inizializza e genera le coordinate per produrre un movimento rettilineo da destra verso sinistra
  * @param arg - È un puntatore generico. In questo caso viene passata una struttura Oggetto
  * @return - void*
  */
 void* bombe(void* arg) {
+
     Oggetto *bomba, temp_bomba;
     arg_to_bomba *argToBomba;
     argToBomba = (arg_to_bomba*) arg;
@@ -166,6 +167,7 @@ void* bombe(void* arg) {
     } else if (bomba->index % 2 == 0) {
         sleep(5);
     }
+    /// Inizializzazione dati bomba
     pthread_mutex_lock(&mtx_bombe); ///blocca il mutex @mtx_bombe
     bomba->id = ID_BOMBA;
     pthread_mutex_lock(&mtx_nemici); ///blocca il mutex @mtx_nemici
@@ -177,27 +179,30 @@ void* bombe(void* arg) {
     bomba->vite = 1;
     pthread_mutex_unlock(&mtx_bombe); ///sblocca il mutex @mtx_bombe
 
+    /// Salvataggio dati in una variabile temporanea
     pthread_mutex_lock(&mtx_bombe); ///blocca il mutex @mtx_bombe
     temp_bomba = *bomba;
     pthread_mutex_unlock(&mtx_bombe); ///sblocca il mutex @mtx_bombe
 
     while (TRUE) {
         pthread_mutex_lock(&mtx_bombe); ///blocca il mutex @mtx_bombe
-        temp_bomba.vite = bomba->vite;
+        temp_bomba.vite = bomba->vite;  // Salviamo numero vite
         pthread_mutex_unlock(&mtx_bombe); ///sblocca il mutex @mtx_bombe
-        temp_bomba.pos.x -= 1;
+        temp_bomba.pos.x -= 1;          // Movimento verso sinistra
 
+        // Se la bomba esce dalla finestra di gioco
         if (temp_bomba.pos.x < 0 || temp_bomba.pos.y >= maxy || temp_bomba.pos.y < 0) {
-            temp_bomba.vite = 0;
+            temp_bomba.vite = 0;        // Impostiamo le vite a zero
             pthread_mutex_lock(&mtx_bombe); ///blocca il mutex @mtx_bombe
-            *bomba = temp_bomba;
+            *bomba = temp_bomba;        // Copiamo i dati della variabile temporanea
             pthread_mutex_unlock(&mtx_bombe); ///sblocca il mutex @mtx_bombe
-            pthread_exit(NULL);
+            pthread_exit(NULL);         // Termina il thread corrente
         } else {
             pthread_mutex_lock(&mtx_bombe); ///blocca il mutex @mtx_bombe
-            *bomba = temp_bomba;
+            *bomba = temp_bomba;        // Copiamo i dati della variabile temporanea
             pthread_mutex_unlock(&mtx_bombe); ///sblocca il mutex @mtx_bombe
-            temp_bomba.old_pos = temp_bomba.pos;
+
+            temp_bomba.old_pos = temp_bomba.pos; // Salva l'ultima posizione della bomba
             usleep(velocita_missili); //regola velocità missili
         }
     }

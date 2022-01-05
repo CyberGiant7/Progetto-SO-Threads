@@ -128,7 +128,7 @@ void stampaBomba(Oggetto *bomba) {
     }
     /* Stampa la bomba nella posizione corrente*/
     attron(COLOR_PAIR(7));
-    mvprintw(bomba->pos.y, bomba->pos.x, "⁂"); ///♿ ⟢ ⁂ ꗇ ꗈ 💣 🚀 卐 ◌́ ◌͂ ✝
+    mvprintw(bomba->pos.y, bomba->pos.x, "¤"); /// ⟢ ⁂ ꗇ ꗈ  ◌́ ◌͂
     attroff(COLOR_PAIR(7));
 }
 /**
@@ -145,7 +145,7 @@ void stampaMissile(Oggetto *missile) {
         attroff(COLOR_PAIR(0));
     }
     attron(COLOR_PAIR(3));
-    mvprintw(missile->pos.y, missile->pos.x, "⟢"); ///♿ ⟢ ⁂ ꗇ ꗈ 💣 🚀 卐 ◌́ ◌͂ ✝
+    mvprintw(missile->pos.y, missile->pos.x, "⟢"); ///⟢ ⁂ ꗇ ꗈ  ◌́ ◌͂
     attroff(COLOR_PAIR(3));
 
     missile->old_pos = missile->pos;
