@@ -34,6 +34,7 @@ void collisione_missili_bombe(Oggetto *missili, Oggetto *bombe_nem){
                         mvaddstr(missili[i].old_pos.y, missili[i].old_pos.x, " ");
                         mvaddstr(missili[i].pos.y, missili[i].pos.x, " ");
                         attroff(COLOR_PAIR(0));
+                        system("aplay -q Suoni/missile_bomba.wav &");
                         missili[i] = init; // la locazione del missile colliso viene reinizializzata con @init
                     }
                 }
@@ -67,9 +68,10 @@ void collisione_bombe_navicella(Oggetto *navicella, Oggetto *bombe_nem){
                     /* Se la posizione di una bomba coincide con quella della navicella del giocatore*/
                     if(bombe_nem[i].pos.x == navicella->pos.x + k && bombe_nem[i].pos.y == navicella->pos.y + j){
                         pthread_cancel(bombe_nem[i].thread_id); //Uccide il thread della bomba collisa
-                        beep(); // Genera un effetto sonoro che indica la collisione
                         bombe_nem[i].vite = 0;
                         navicella->vite--;
+                        if (navicella->vite > 0)
+                            system("aplay -q Suoni/hit_navicella.wav &"); // Genera un effetto sonoro che indica la collisione
                     }
                 }
             }
@@ -114,6 +116,7 @@ void collisione_missili_nemici(Oggetto *enemies, Oggetto *missili, _Bool *primaf
                                 missili[j] = init; // la locazione del missile colliso viene rinizializzato con @init
                                 /* Se la navicella nemica colpita ha terminato le vite */
                                 if (enemies[i].vite == 0){
+                                    system("aplay -q Suoni/morte_nemico.wav &");
                                     pthread_cancel(enemies[i].thread_id); // uccide il thread della navicella nemica
                                     stampaNemico(&enemies[i]); //cancello la navicella nemica distrutta
                                     enemies[i] = init; // la locazione della navicella ditrutta viene rinizializzata con @init

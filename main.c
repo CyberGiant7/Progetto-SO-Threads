@@ -136,11 +136,13 @@ StatoCorrente gioco() {
 
     if (WIN) {
         clear();
+        system("aplay -q Suoni/win.wav &");
         for (i = 0; i < 6; ++i) {
             mvprintw((maxy - 5) / 2 + i, (maxx - 58) / 2, vittoria[i]);     // Stampa vittoria
         }
     } else {
         clear();
+        system("aplay -q Suoni/gameover.wav &");
         for (i = 0; i < 6; ++i) {
             mvprintw((maxy - 6) / 2 + i, (maxx - 69) / 2, gameover[i]);     // Stampa game over
         }
@@ -218,6 +220,7 @@ _Bool AreaGioco(Oggetto *navicella, Oggetto *enemies, _Bool *sparo) {
         /// Generazione e stampa missili
         pthread_mutex_lock(&mtx_missili);
         if (sparo_temp && missili_vivi < MAX_MISSILI) {     // se è stato premuto space e i missili sono sotto il max
+            system("aplay -q Suoni/missili.wav &");
             for (int temp = missili_vivi + 2; missili_vivi < temp; missili_vivi++) {
                 /// Inizializzo il missile
                 if (missili_vivi % 2 == 0)

@@ -162,6 +162,7 @@ StatoCorrente area_menu() {
             default:
                 break;
         }
+        system("aplay -q Suoni/menu.wav &");
         if (scelta == 10) //caso enter
             break;
     }
@@ -242,6 +243,7 @@ StatoCorrente opzioni() {
             default:
                 break;
         }
+        system("aplay -q Suoni/menu.wav &");
         for (i = 0; i < MENUWIN_Y - 2; ++i) {
             mvwprintw(menuwin, i + 1, 1, "                                                                ");
         }
@@ -374,6 +376,7 @@ int sottomenu(WINDOW* menuwin, char *scelte[], int num_scelte){
             default:
                 break;
         }
+        system("aplay -q Suoni/menu.wav &");
         if (scelta == 10) //caso enter
             break;
     }

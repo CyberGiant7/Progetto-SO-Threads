@@ -32,25 +32,25 @@ void stampaNavicella(Oggetto *navicella) {
     pthread_mutex_unlock(&mtx_nave); ///sblocca il mutex @mtx_nave
     /* Cancella la 'vecchia' posizione della navicella */
     if (temp_navicella.old_pos.x >= 0) {
-        attron(COLOR_PAIR(0));
+        attron(COLOR_PAIR(BLACK));
         for (i = 0; i < DIM_NAVICELLA; i++) {
             mvaddstr(temp_navicella.old_pos.y + i, temp_navicella.old_pos.x, "      ");
         }
-        attroff(COLOR_PAIR(0));
+        attroff(COLOR_PAIR(BLACK));
     }
-    attron(COLOR_PAIR(2));
+    attron(COLOR_PAIR(GREEN));
     /* Stampa la 'nuova' posizione della navicella*/
     for (i = 0; i < DIM_NAVICELLA; i++) {
         if (i <= 1 || i >= 4) {
             // Colora le 'parti esterne' della navicella
-            attron(COLOR_PAIR(6));
+            attron(COLOR_PAIR(BLUE));
             mvaddstr(temp_navicella.pos.y + i, temp_navicella.pos.x, nave[i]);
-            attroff(COLOR_PAIR(6));
+            attroff(COLOR_PAIR(BLUE));
         } else {
             // Colora la 'parte centrale' della navicella
-            attron(COLOR_PAIR(2));
+            attron(COLOR_PAIR(GREEN));
             mvaddstr(temp_navicella.pos.y + i, temp_navicella.pos.x, nave[i]);
-            attroff(COLOR_PAIR(2));
+            attroff(COLOR_PAIR(GREEN));
         }
     }
 }
@@ -66,11 +66,11 @@ void stampaNemico(Oggetto *enemy){
 
     /** Se la navicella nemica è stata appena inizializzata **/
     if (enemy_temp.old_pos.y != -1 && enemy_temp.old_pos.x != -1) {
-        attron(COLOR_PAIR(0));
+        attron(COLOR_PAIR(BLACK));
         for (i = 0; i < DIM_NEMICO; i++) {
             mvprintw(enemy_temp.old_pos.y + i, enemy_temp.old_pos.x, "   "); //cancella la posizione precedente
         }
-        attroff(COLOR_PAIR(0));
+        attroff(COLOR_PAIR(BLACK));
     }
     /** Controlla quante vite ha il nemico con relativa stampa **/
     switch (enemy_temp.vite) {
@@ -78,39 +78,39 @@ void stampaNemico(Oggetto *enemy){
         case 3:
             for (i = 0; i < DIM_NEMICO; i++) {
                 if (i == 1) {
-                    attron(COLOR_PAIR(4));
+                    attron(COLOR_PAIR(MAGENTA));
                     mvprintw(enemy_temp.pos.y + i, enemy_temp.pos.x, nemico_lv1[i]);
-                    attroff(COLOR_PAIR(4));
+                    attroff(COLOR_PAIR(MAGENTA));
                 } else {
-                    attron(COLOR_PAIR(7));
+                    attron(COLOR_PAIR(RED));
                     mvprintw(enemy_temp.pos.y + i, enemy_temp.pos.x, nemico_lv1[i]);
-                    attroff(COLOR_PAIR(7));
+                    attroff(COLOR_PAIR(RED));
                 }
             }
             break;
             // Se ha due vite stampa nemico livello 2
         case 2:
-            attron(COLOR_PAIR(5));
+            attron(COLOR_PAIR(CYAN));
             for (i = 0; i < DIM_NEMICO; i++) {
                 mvprintw(enemy_temp.pos.y + i, enemy_temp.pos.x, nemico_lv2[i]);
             }
-            attroff(COLOR_PAIR(1));
+            attroff(COLOR_PAIR(WHITE));
             break;
             // Se ha una vita stampa nemico livello 3
         case 1:
-            attron(COLOR_PAIR(5));
+            attron(COLOR_PAIR(CYAN));
             for (i = 0; i < DIM_NEMICO; i++) {
                 mvprintw(enemy_temp.pos.y + i, enemy_temp.pos.x, nemico_lv3[i]);
             }
-            attroff(COLOR_PAIR(1));
+            attroff(COLOR_PAIR(WHITE));
             break;
             // Se ha zero vite cancella la navicella nemica
         case 0:
-            attron(COLOR_PAIR(0));
+            attron(COLOR_PAIR(BLACK));
             for (i = 0; i < DIM_NEMICO; i++) {
                 mvprintw(enemy_temp.pos.y + i, enemy_temp.pos.x, "   ");
             }
-            attroff(COLOR_PAIR(0));
+            attroff(COLOR_PAIR(BLACK));
             break;
     }
 }
@@ -122,14 +122,14 @@ void stampaNemico(Oggetto *enemy){
 void stampaBomba(Oggetto *bomba) {
     // Se la bomba è all'interno dalla finestra di gioco
     if (bomba->pos.x != -1 && bomba->pos.y != -1) {
-        attron(COLOR_PAIR(0));
+        attron(COLOR_PAIR(BLACK));
         mvprintw(bomba->old_pos.y, bomba->old_pos.x, " "); // cancella la stampa dell'ultima posizione della bomba
-        attroff(COLOR_PAIR(0));
+        attroff(COLOR_PAIR(BLACK));
     }
     /* Stampa la bomba nella posizione corrente*/
-    attron(COLOR_PAIR(7));
+    attron(COLOR_PAIR(RED));
     mvprintw(bomba->pos.y, bomba->pos.x, "¤"); /// ⟢ ⁂ ꗇ ꗈ  ◌́ ◌͂
-    attroff(COLOR_PAIR(7));
+    attroff(COLOR_PAIR(RED));
 }
 /**
  * La funzione @stampaMissile stampa i missili nella posizione corrente e cancella dallo schermo
@@ -140,13 +140,13 @@ void stampaBomba(Oggetto *bomba) {
 void stampaMissile(Oggetto *missile) {
     /* Se il missile è all'interno dalla finestra di gioco*/
     if (missile->pos.x != -1 && missile->pos.y != -1) {
-        attron(COLOR_PAIR(0));
+        attron(COLOR_PAIR(BLACK));
         mvprintw(missile->old_pos.y, missile->old_pos.x, " ");
-        attroff(COLOR_PAIR(0));
+        attroff(COLOR_PAIR(BLACK));
     }
-    attron(COLOR_PAIR(3));
+    attron(COLOR_PAIR(YELLOW));
     mvprintw(missile->pos.y, missile->pos.x, "⟢"); ///⟢ ⁂ ꗇ ꗈ  ◌́ ◌͂
-    attroff(COLOR_PAIR(3));
+    attroff(COLOR_PAIR(YELLOW));
 
     missile->old_pos = missile->pos;
 }
